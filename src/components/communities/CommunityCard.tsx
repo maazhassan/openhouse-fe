@@ -8,9 +8,13 @@ type CommunityCardProps = {
 
 const CommunityCard = ({ name, imgUrl, numHomes, averagePrice }: CommunityCardProps) => {
   return (
-    <a href="#" className="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow md:flex-row md:max-w-2xl md:max-h-48 hover:bg-gray-100">
+    <a 
+      href="#"
+      className="flex flex-col items-center bg-white border border-gray-200 rounded-lg 
+                 shadow md:flex-row md:max-w-2xl md:max-h-48 hover:bg-gray-100">
       <img 
-        className="object-cover w-full rounded-t-lg h-72 md:object-fit md:max-h-48 md:w-64 md:rounded-none md:rounded-s-lg"
+        className="object-cover w-full rounded-t-lg h-72 md:object-fit md:max-h-48 md:w-64 
+                   md:rounded-none md:rounded-s-lg"
         src={imgUrl == "" ? "src/assets/community-placeholder.jpg" : imgUrl}
         alt="Community"
         onError={({ currentTarget }) => {
@@ -26,7 +30,10 @@ const CommunityCard = ({ name, imgUrl, numHomes, averagePrice }: CommunityCardPr
           Homes for sale: {numHomes}
         </p>
         <p className="mt-2 text-sm text-gray-500">
-          Average home price: {new Intl.NumberFormat("en-CA", {style: "currency", currency: "CAD"}).format(averagePrice)}
+          Average home price: {
+            averagePrice == 0 ? "N/A" : 
+            new Intl.NumberFormat("en-CA", {style: "currency", currency: "CAD"}).format(averagePrice)
+          }
         </p>
       </div>
     </a>
