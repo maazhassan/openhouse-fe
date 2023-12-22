@@ -6,20 +6,30 @@ import CommunityCard from "./CommunityCard";
 const Communities = ({ className }: {className?: string}) => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [houses, setHouses] = useState<House[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch community data from API
-    fetch("/api/openhouse-ai-fe-coding-test/communities.json")
-      .then((response) => response.json())
-      .then((data) => {
-        setCommunities(z.array(CommunitySchema).parse(data));
-      });
-    
-    // Fetch houses data from API
-    fetch("/api/openhouse-ai-fe-coding-test/homes.json")
-      .then((response) => response.json())
-      .then((data) => {
-        setHouses(z.array(HouseSchema).parse(data));
+    Promise.all([
+      fetch("/api/openhouse-ai-fe-coding-test/communities.json"),
+      fetch("/api/openhouse-ai-fe-coding-test/homes.json")
+    ])
+      .then((responses) => {
+        if (responses.some((response) => !response.ok)) {
+          setError("Failed to fetch data from API");
+        }
+        else {
+          Promise.all(responses.map((response) => response.json()))
+            .then((data) => {
+              setCommunities(z.array(CommunitySchema).parse(data[0]));
+              setHouses(z.array(HouseSchema).parse(data[1]));
+            })
+            .catch((error) => {
+              setError(error.message);
+            });
+        }
+      })
+      .catch((error) => {
+        setError(error.message);
       });
   }, []);
 
@@ -38,17 +48,22 @@ const Communities = ({ className }: {className?: string}) => {
   }
 
   return (
-    <div className={`flex flex-col gap-3 w-fit ${className}`}>
-      {([] as Community[]).concat(communities).sort(sortCommunities).map((community, idx) => 
-        <CommunityCard 
+    <>
+    {
+      error ? <div className="text-red-500">{"API error: " + error}</div> :
+      <div className={`flex flex-col gap-3 w-fit ${className}`}>
+        {([] as Community[]).concat(communities).sort(sortCommunities).map((community, idx) => 
+          <CommunityCard 
           name={community.name}
-          imgUrl={community.imgUrl}
-          numHomes={houses.filter((house) => house.communityId === community.id).length}
-          averagePrice={calculateAveragePrice(community)}
-          key={idx}
-        />
-      )}
-    </div>
+            imgUrl={community.imgUrl}
+            numHomes={houses.filter((house) => house.communityId === community.id).length}
+            averagePrice={calculateAveragePrice(community)}
+            key={idx}
+          />
+        )}
+      </div>
+    }
+    </>
   )
 }
 
